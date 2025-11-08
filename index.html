@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DEDM - Intranet</title>
+  <style>
+    :root{--accent:#0b67a3;--bg:#f4f6fb;--card:#fff}
+    *{box-sizing:border-box;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif}
+    body{margin:0;background:var(--bg);color:#111}
+    .container{max-width:1100px;margin:20px auto;padding:20px}
+    .welcome{display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(10,20,40,.06)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:54px;height:54px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;overflow:hidden}
+    .logo img{width:100%;height:100%;object-fit:cover;display:block}
+    .lead{font-size:18px}
+    .login-box{width:340px;background:var(--card);padding:18px;border-radius:8px;box-shadow:0 6px 20px rgba(10,20,40,.06)}
+    .field{margin:8px 0}
+    input,select,textarea{width:100%;padding:10px;border-radius:6px;border:1px solid #d6dbe6}
+    button{padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+    .app-grid{display:grid;grid-template-columns:240px 1fr;gap:16px;margin-top:16px}
+    .sidebar{background:var(--card);padding:12px;border-radius:10px;height:72vh;overflow:auto}
+    .content{background:var(--card);padding:12px;border-radius:10px;min-height:72vh}
+    .menu-item{padding:10px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    .menu-item:hover{background:#f2f6fb}
+    .badge{background:#eee;padding:4px 8px;border-radius:999px}
+    .topbar{display:flex;align-items:center;gap:12px;justify-content:space-between}
+    .bell{position:relative;cursor:pointer}
+    .bell .count{position:absolute;top:-6px;left:18px;background:#e53e3e;color:white;padding:3px 6px;border-radius:999px;font-size:12px}
+    .bellDropdown{position:absolute;right:0;top:36px;background:white;border:1px solid #e6eef9;border-radius:8px;min-width:320px;box-shadow:0 6px 18px rgba(10,20,40,.08);z-index:50}
+    .card{background:#fafbfd;padding:12px;border-radius:8px;margin-bottom:12px}
+    .msg{border:1px solid #e6eef9;padding:10px;border-radius:8px;margin-bottom:8px}
+    .small{font-size:13px;color:#666}
+    .danger{background:#fff5f5;border:1px solid #fed7d7}
+    .success{background:#f0fff4;border:1px solid #c6f6d5}
+    .file-preview{font-size:13px;color:#0b67a3;text-decoration:underline;cursor:pointer}
+    .row{display:flex;gap:8px}
+    .col{flex:1}
+    .hidden{display:none}
+    .muted{color:#777}
+    textarea{min-height:80px}
+    .mask{letter-spacing:3px}
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <!-- Welcome & Login area -->
+    <div class="welcome" id="welcomeScreen">
+      <div class="brand">
+        <div class="logo" id="logoBox"><!-- logo image or fallback text --><span id="logoText">DEDM</span><img id="siteLogoImg" class="hidden" alt="logo"/></div>
+        <div>
+          <div class="lead" id="welcomeText">Seja bem vindo(a) à DEDM</div>
+          <div class="small">Intranet privada - DEDM</div>
+        </div>
+      </div>
+
+      <div class="login-box" aria-label="Entrar na intranet">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong>Entrar na conta</strong>
+        </div>
+        <div class="field"><input id="loginUser" placeholder="Usuário" autocomplete="username" /></div>
+        <div class="field"><input id="loginPass" placeholder="Senha" type="password" autocomplete="current-password" /></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="btnLogin">Entrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- App after login -->
+    <div id="appArea" class="hidden">
+      <div class="topbar card">
+        <div style="display:flex;gap:16px;align-items:center">
+          <div class="logo" id="logoBoxTop"><!-- logo image or fallback text --><span id="logoTextTop">DEDM</span><img id="siteLogoImgTop" class="hidden" alt="logo"/></div>
+          <div>
+            <div id="topGreeting"><strong>Olá,</strong> <span id="userShortName"></span></div>
+            <div class="small" id="userSector"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;position:relative">
+          <div class="bell" id="bellTop" title="Notificações">🔔<span class="count" id="bellCount" style="display:none">0</span>
+            <div id="bellMenu" class="bellDropdown hidden"></div>
+          </div>
+          <button id="btnLogout" style="background:#e53e3e">Sair</button>
+        </div>
+      </div>
+
+      <div class="app-grid">
+        <aside class="sidebar">
+          <div style="font-weight:700;margin-bottom:8px">Menu</div>
+          <div class="menu-item" data-view="minhaConta">Minha conta</div>
+          <div class="menu-item" data-view="mensagensGerais">Mensagens gerais <span class="badge">broadcast</span></div>
+          <div class="menu-item" data-view="mensagensPrivadas">Mensagens privadas</div>
+          <div class="menu-item" data-view="documentos">Documentos</div>
+          <div class="menu-item" data-view="faltas">Faltas disciplinares</div>
+          <div class="menu-item" data-view="recompensas">Recompensas</div>
+          <div class="menu-item" data-view="adminArea">Área do presidente</div>
+          <div class="menu-item" data-view="gerenciarContas">Gerenciar contas</div>
+        </aside>
+
+        <main class="content">
+          <!-- Views -->
+          <section id="view_minhaConta" class="hidden">
+            <h3>Minha Conta</h3>
+            <div class="card">
+              <div><strong>Nome:</strong> <span id="mc_nome"></span></div>
+              <div><strong>Registro:</strong> <span id="mc_reg"></span></div>
+              <div><strong>Usuário:</strong> <span id="mc_user"></span></div>
+              <div><strong>Senha:</strong> <span id="mc_pass" class="mask">••••••••</span> <button id="btnChangePass" style="margin-left:8px">Alterar senha</button></div>
+              <div id="changePassBox" class="hidden" style="margin-top:8px">
+                <input id="newPass" placeholder="Nova senha" autocomplete="new-password" />
+                <input id="newPassConfirm" placeholder="Confirmar nova senha" />
+                <div style="display:flex;gap:8px;margin-top:8px"><button id="btnSavePass">Salvar</button><button id="btnCancelPass" style="background:#718096">Cancelar</button></div>
+              </div>
+              <div><strong>Setor:</strong> <span id="mc_setor"></span></div>
+              <div><strong>Cargo:</strong> <span id="mc_cargo"></span></div>
+            </div>
+          </section>
+
+          <section id="view_mensagensGerais" class="hidden">
+            <h3>Mensagens gerais</h3>
+            <div class="card">
+              <div id="broadcastForm" class="hidden" style="margin-top:8px">
+                <textarea id="broadcastText" placeholder="Texto da mensagem (opcional)"></textarea>
+                <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                  <input type="file" id="broadcastFile" />
+                  <button id="btnBroadcast">Enviar para todos</button>
+                </div>
+              </div>
+              <div id="broadcastList" style="margin-top:12px"></div>
+            </div>
+          </section>
+
+          <section id="view_mensagensPrivadas" class="hidden">
+            <h3>Mensagens privadas</h3>
+            <div class="card">
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <select id="pmTo"></select>
+                <input id="pmText" placeholder="Texto da mensagem" />
+                <input type="file" id="pmFile" />
+                <button id="btnSendPM">Enviar</button>
+              </div>
+              <div id="pmList" style="margin-top:12px"></div>
+            </div>
+          </section>
+
+          <section id="view_documentos" class="hidden">
+            <h3>Documentos (privados)</h3>
+            <div class="card">
+              <div id="docForm" class="hidden" style="margin-top:8px">
+                <select id="docTo"></select>
+                <input id="docCaption" placeholder="Descrição" />
+                <input type="file" id="docFile" />
+                <button id="btnSendDoc">Enviar documento</button>
+              </div>
+              <div id="docList" style="margin-top:12px"></div>
+            </div>
+          </section>
+
+          <section id="view_faltas" class="hidden">
+            <h3>Faltas disciplinares</h3>
+            <div class="card">
+              <div id="faltaForm" class="hidden" style="margin-top:8px">
+                <select id="faltaTo"></select>
+                <input id="faltaDesc" placeholder="Descrição da falta" />
+                <input type="file" id="faltaFile" />
+                <button id="btnSendFalta">Enviar falta</button>
+              </div>
+              <div id="faltaList" style="margin-top:12px"></div>
+            </div>
+          </section>
+
+          <section id="view_recompensas" class="hidden">
+            <h3>Recompensas</h3>
+            <div class="card">
+              <div id="recForm" class="hidden" style="margin-top:8px">
+                <select id="recTo"></select>
+                <input id="recDesc" placeholder="Descrição da recompensa" />
+                <input type="file" id="recFile" />
+                <button id="btnSendRec">Enviar recompensa</button>
+              </div>
+              <div id="recList" style="margin-top:12px"></div>
+            </div>
+          </section>
+
+          <section id="view_adminArea" class="hidden">
+            <h3>Área do presidente</h3>
+            <div class="card">
+              <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                <input id="adminNome" placeholder="Nome completo" />
+                <input id="adminUser" placeholder="Usuário" />
+                <input id="adminPass" placeholder="Senha" />
+                <input id="adminRegistro" placeholder="Registro (nº pessoal)" />
+              </div>
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <select id="adminCargo"></select>
+                <select id="adminSetor"></select>
+                <button id="btnCreateAccount">Criar conta</button>
+              </div>
+              <hr style="margin:12px 0" />
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="newCargo" placeholder="Novo cargo" />
+                <button id="btnAddCargo">Adicionar cargo</button>
+                <input id="newSetor" placeholder="Novo setor" />
+                <button id="btnAddSetor">Adicionar setor</button>
+              </div>
+
+              <hr style="margin:12px 0" />
+              <div>
+                <strong>Logo do site</strong>
+                <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+                  <input type="file" id="siteLogoFile" accept="image/*" />
+                  <button id="btnUploadLogo">Enviar logo (apenas presidente)</button>
+                  <button id="btnClearLogo" style="background:#e53e3e">Remover logo</button>
+                </div>
+                <div class="small" style="margin-top:8px">O presidente pode mudar a imagem do logo do site aqui.</div>
+              </div>
+
+            </div>
+          </section>
+
+          <section id="view_gerenciarContas" class="hidden">
+            <h3>Gerenciar contas</h3>
+            <div class="card">
+              <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                <select id="manageUser"></select>
+                <input id="banDuration" placeholder="Banir por (dias) — vazio = permanente" />
+                <button id="btnBan">Banir</button>
+                <button id="btnUnban">Desbanir</button>
+                <button id="btnDelete" style="background:#e53e3e">Excluir</button>
+              </div>
+              <div style="margin-top:12px">
+                <strong>Histórico do usuário selecionado</strong>
+                <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                  <button id="btnLoadDocs">Carregar documentos</button>
+                  <button id="btnLoadFaltas">Carregar faltas</button>
+                  <button id="btnLoadRecs">Carregar recompensas</button>
+                </div>
+                <div id="historyList" style="margin-top:12px"></div>
+              </div>
+            </div>
+          </section>
+
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id)=>document.getElementById(id);
+    function save(key,val){localStorage.setItem(key,JSON.stringify(val))}
+    function load(key,def){const a=localStorage.getItem(key);return a?JSON.parse(a):def}
+
+    function initData(){
+      if(!load('d_users')){
+        const users = [
+          {nome:'Matheus Ribeiro Pinho',registro:'0001',usuario:'MRP0605',senha:'mrp2014',cargo:'Presidente',setor:'Inter',banned:false,bannedUntil:null}
+        ];
+        save('d_users',users);
+      }
+      if(!load('d_sectors')){save('d_sectors',['Inter']);}
+      if(!load('d_cargos')){save('d_cargos',['Presidente']);}
+      if(!load('d_broadcasts')){save('d_broadcasts',[]);}
+      if(!load('d_pms')){save('d_pms',[]);}
+      if(!load('d_docs')){save('d_docs',[]);}
+      if(!load('d_faltas')){save('d_faltas',[]);}
+      if(!load('d_recs')){save('d_recs',[]);}
+      if(!load('d_notifs')){save('d_notifs',[]);}
+    }
+    initData();
+
+    let currentUser = null;
+
+    function renderLogo(){
+      const logoData = load('d_site_logo', null);
+      const img = $('siteLogoImg'); const imgTop = $('siteLogoImgTop'); const text = $('logoText'); const textTop = $('logoTextTop');
+      if(logoData){ img.src = logoData; img.classList.remove('hidden'); imgTop.src = logoData; imgTop.classList.remove('hidden'); text.style.display='none'; textTop.style.display='none'; }
+      else { if(img) img.classList.add('hidden'); if(imgTop) imgTop.classList.add('hidden'); if(text) text.style.display='block'; if(textTop) textTop.style.display='block'; }
+    }
+
+    function renderUserSelects(){
+      const users = load('d_users',[]);
+      const selects = ['pmTo','docTo','faltaTo','recTo','adminCargo','adminSetor','manageUser'];
+      selects.forEach(id=>{
+        const el = $(id);
+        if(!el) return;
+        el.innerHTML='';
+        if(id==='adminCargo' || id==='adminSetor'){
+          if(id==='adminCargo') load('d_cargos',[]).forEach(c=>el.appendChild(new Option(c,c)));
+          if(id==='adminSetor') load('d_sectors',[]).forEach(s=>el.appendChild(new Option(s,s)));
+        } else {
+          load('d_users',[]).forEach(u=>el.appendChild(new Option(u.nome+' ('+u.usuario+')',u.usuario)));
+        }
+      });
+    }
+
+    function isCurrentlyBanned(user){
+      if(!user) return false;
+      if(!user.banned) return false;
+      if(!user.bannedUntil) return true;
+      return new Date(user.bannedUntil) > new Date();
+    }
+
+    function renderManageList(){
+      const list = $('manageList'); if(!list) return; list.innerHTML='';
+      load('d_users',[]).forEach(u=>{
+        const div = document.createElement('div'); div.className='msg';
+        const until = u.bannedUntil?(' — banido até '+new Date(u.bannedUntil).toLocaleString()):'';
+        div.innerHTML = `<strong>${u.nome}</strong> — ${u.usuario} — ${u.cargo} / ${u.setor} ${u.banned?'<span class="badge">BANI</span>':''} ${until}`;
+        list.appendChild(div);
+      });
+    }
+
+    function renderBroadcasts(){
+      const list = $('broadcastList'); list.innerHTML='';
+      load('d_broadcasts',[]).slice().reverse().forEach(b=>{
+        const div = document.createElement('div'); div.className='msg';
+        div.innerHTML = `<div><strong>${b.fromName}</strong> <span class="small">${new Date(b.time).toLocaleString()}</span></div><div>${b.text||''}</div>`;
+        if(b.fileName){
+          const link = document.createElement('div'); link.className='file-preview'; link.textContent = b.fileName; link.onclick = ()=>openFileData(b.fileData,b.fileName);
+          div.appendChild(link);
+        }
+        if(currentUser && currentUser.cargo.toLowerCase().includes('presidente')){
+          const btn = document.createElement('button'); btn.textContent='Apagar'; btn.style.marginTop='8px'; btn.onclick=()=>{ if(confirm('Apagar broadcast?')){ deleteBroadcast(b.id); } };
+          div.appendChild(btn);
+        }
+        list.appendChild(div);
+      });
+    }
+
+    function deleteBroadcast(id){ let arr = load('d_broadcasts',[]); arr = arr.filter(x=>x.id!==id); save('d_broadcasts',arr); renderBroadcasts(); }
+
+    function renderPMs(){
+      const list = $('pmList'); list.innerHTML='';
+      if(!currentUser) return;
+      const pms = load('d_pms',[]).filter(m=>m.to===currentUser.usuario || m.from===currentUser.usuario);
+      pms.slice().reverse().forEach(m=>{
+        const div = document.createElement('div'); div.className='msg';
+        div.innerHTML = `<div><strong>${m.fromName}</strong> → <strong>${m.toName}</strong> <span class="small">${new Date(m.time).toLocaleString()}</span></div><div>${m.text||''}</div>`;
+        if(m.fileName){
+          const link = document.createElement('div'); link.className='file-preview'; link.textContent = m.fileName; link.onclick = ()=>openFileData(m.fileData,m.fileName);
+          div.appendChild(link);
+        }
+        if(m.from===currentUser.usuario){
+          const btn = document.createElement('button'); btn.textContent='Apagar'; btn.style.marginTop='8px'; btn.onclick=()=>{if(confirm('Apagar esta mensagem?')){deletePM(m.id)}};
+          div.appendChild(btn);
+        }
+        list.appendChild(div);
+      });
+    }
+
+    function renderDocs(){
+      const list = $('docList'); list.innerHTML='';
+      if(!currentUser) return;
+      const docs = load('d_docs',[]).filter(d=>d.to===currentUser.usuario || d.from===currentUser.usuario);
+      docs.slice().reverse().forEach(d=>{
+        const div = document.createElement('div'); div.className='msg';
+        div.innerHTML = `<div><strong>${d.fromName}</strong> → <strong>${d.toName}</strong> <span class="small">${new Date(d.time).toLocaleString()}</span></div><div><em>${d.description||''}</em></div>`;
+        if(d.fileName){
+          const link = document.createElement('div'); link.className='file-preview'; link.textContent = d.fileName; link.onclick = ()=>openFileData(d.fileData,d.fileName);
+          div.appendChild(link);
+        }
+        if(currentUser && (currentUser.cargo.toLowerCase().includes('presidente') || d.from===currentUser.usuario)){
+          const btn = document.createElement('button'); btn.textContent='Apagar'; btn.style.marginTop='8px'; btn.onclick=()=>{ if(confirm('Apagar documento?')){ deleteDoc(d.id); } };
+          div.appendChild(btn);
+        }
+        list.appendChild(div);
+      });
+    }
+
+    function renderFaltas(){
+      const list = $('faltaList'); list.innerHTML='';
+      if(!currentUser) return;
+      const items = load('d_faltas',[]).filter(d=>d.to===currentUser.usuario || d.from===currentUser.usuario);
+      items.slice().reverse().forEach(d=>{
+        const div = document.createElement('div'); div.className='msg danger';
+        div.innerHTML = `<div><strong>${d.fromName}</strong> → <strong>${d.toName}</strong> <span class="small">${new Date(d.time).toLocaleString()}</span></div><div>${d.desc||''}</div>`;
+        if(d.fileName){
+          const link = document.createElement('div'); link.className='file-preview'; link.textContent = d.fileName; link.onclick = ()=>openFileData(d.fileData,d.fileName);
+          div.appendChild(link);
+        }
+        if(currentUser && (currentUser.cargo.toLowerCase().includes('presidente') || d.from===currentUser.usuario)){
+          const btn = document.createElement('button'); btn.textContent='Apagar'; btn.style.marginTop='8px'; btn.onclick=()=>{ if(confirm('Apagar falta?')){ deleteFalta(d.id); } };
+          div.appendChild(btn);
+        }
+        list.appendChild(div);
+      });
+    }
+
+    function renderRecs(){
+      const list = $('recList'); list.innerHTML='';
+      if(!currentUser) return;
+      const items = load('d_recs',[]).filter(d=>d.to===currentUser.usuario || d.from===currentUser.usuario);
+      items.slice().reverse().forEach(d=>{
+        const div = document.createElement('div'); div.className='msg success';
+        div.innerHTML = `<div><strong>${d.fromName}</strong> → <strong>${d.toName}</strong> <span class="small">${new Date(d.time).toLocaleString()}</span></div><div>${d.desc||''}</div>`;
+        if(d.fileName){
+          const link = document.createElement('div'); link.className='file-preview'; link.textContent = d.fileName; link.onclick = ()=>openFileData(d.fileData,d.fileName);
+          div.appendChild(link);
+        }
+        if(currentUser && (currentUser.cargo.toLowerCase().includes('presidente') || d.from===currentUser.usuario)){
+          const btn = document.createElement('button'); btn.textContent='Apagar'; btn.style.marginTop='8px'; btn.onclick=()=>{ if(confirm('Apagar recompensa?')){ deleteRec(d.id); } };
+          div.appendChild(btn);
+        }
+        list.appendChild(div);
+      });
+    }
+
+    function deletePM(id){ let arr = load('d_pms',[]); arr = arr.filter(x=>x.id!==id); save('d_pms',arr); renderPMs(); }
+    function deleteDoc(id){ let arr = load('d_docs',[]); arr = arr.filter(x=>x.id!==id); save('d_docs',arr); renderDocs(); }
+    function deleteFalta(id){ let arr = load('d_faltas',[]); arr = arr.filter(x=>x.id!==id); save('d_faltas',arr); renderFaltas(); }
+    function deleteRec(id){ let arr = load('d_recs',[]); arr = arr.filter(x=>x.id!==id); save('d_recs',arr); renderRecs(); }
+
+    function openFileData(data,name){ const w = window.open(); w.document.title = name; const isImage = name.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i); if(isImage){ w.document.body.innerHTML = `<img src="${data}" style="max-width:100%">`; return; } const isVideo = name.match(/\.(mp4|webm|ogg)$/i); if(isVideo){ w.document.body.innerHTML = `<video controls src="${data}" style="max-width:100%"></video>`; return; } w.document.body.innerHTML = `<a href='${data}' download='${name}'>Download ${name}</a>`; }
+
+    // Login
+    $('btnLogin').addEventListener('click',()=>{ const u = $('loginUser').value.trim(); const p = $('loginPass').value.trim(); const users = load('d_users',[]);
+      const found = users.find(x=>x.usuario===u && x.senha===p);
+      if(!found){alert('Usuário ou senha incorretos');return}
+      if(isCurrentlyBanned(found)){ alert('Conta banida. Contate o presidente.'); return }
+      currentUser = found; afterLogin(); });
+
+    function afterLogin(){
+      $('welcomeScreen').classList.add('hidden'); $('appArea').classList.remove('hidden');
+      $('userShortName').textContent = currentUser.nome.split(' ')[0];
+      $('userSector').textContent = currentUser.cargo + ' — ' + currentUser.setor;
+      $('mc_nome').textContent = currentUser.nome; $('mc_reg').textContent = currentUser.registro; $('mc_user').textContent = currentUser.usuario; $('mc_setor').textContent = currentUser.setor; $('mc_cargo').textContent = currentUser.cargo;
+      $('mc_pass').textContent = '••••••••';
+
+      const isPres = currentUser.cargo.toLowerCase().includes('presidente');
+      ['broadcastForm','docForm','faltaForm','recForm','adminArea'].forEach(id=>{ const el=$(id); if(el) el.classList.toggle('hidden',!isPres); });
+      document.querySelectorAll('[data-view]').forEach(el=>{ if(el.getAttribute('data-view')==='adminArea' || el.getAttribute('data-view')==='gerenciarContas'){ el.style.display = isPres? 'flex':'none'; } else el.style.display = 'flex'; });
+
+      renderLogo();
+      renderUserSelects(); renderBroadcasts(); renderPMs(); renderDocs(); renderFaltas(); renderRecs(); renderManageList(); updateNotifCount(); showView('minhaConta');
+    }
+
+    $('btnLogout').addEventListener('click',()=>{ location.reload(); });
+    document.querySelectorAll('.menu-item').forEach(it=>it.addEventListener('click',()=>{ showView(it.getAttribute('data-view')); }));
+    function showView(name){ document.querySelectorAll('section').forEach(s=>s.classList.add('hidden')); const view = $('view_'+name); if(view) view.classList.remove('hidden'); if(name==='mensagensGerais') renderBroadcasts(); if(name==='mensagensPrivadas') renderPMs(); if(name==='documentos') renderDocs(); if(name==='faltas') renderFaltas(); if(name==='recompensas') renderRecs(); if(name==='gerenciarContas') renderManageList(); }
+
+    // Broadcast send (president)
+    $('btnBroadcast')?.addEventListener('click',async ()=>{ const text = $('broadcastText').value.trim(); const fileEl = $('broadcastFile'); const file = fileEl.files[0]; let fileData=null, fileName=null; if(file){ fileName = file.name; fileData = await toBase64(file); } const arr = load('d_broadcasts',[]); arr.push({id:Date.now(),from:currentUser.usuario,fromName:currentUser.nome,text,time:Date.now(),fileName,fileData}); save('d_broadcasts',arr); addNotif({type:'broadcast',text:`Broadcast enviado por ${currentUser.nome}`}); fileEl.value=''; $('broadcastText').value=''; renderBroadcasts(); updateNotifCount(); });
+
+    // Private messages
+    $('btnSendPM')?.addEventListener('click',async ()=>{ const to = $('pmTo').value; if(!to){alert('Escolha destinatário');return} if(currentUser && to===currentUser.usuario){alert('Você não pode enviar mensagem privada para si mesmo'); return} const toUser = load('d_users',[]).find(u=>u.usuario===to); const text = $('pmText').value.trim(); const file = $('pmFile').files[0]; let fileData=null,fileName=null; if(file){fileName=file.name; fileData = await toBase64(file)} const arr = load('d_pms',[]); const obj = {id:Date.now()+'_'+Math.random(),from:currentUser.usuario,fromName:currentUser.nome,to:toUser.usuario,toName:toUser.nome,text,time:Date.now(),fileName,fileData}; arr.push(obj); save('d_pms',arr); addNotif({type:'pm',to:toUser.usuario,text:`Mensagem privada de ${currentUser.nome}`}); $('pmText').value=''; $('pmFile').value=''; renderPMs(); updateNotifCount(); });
+
+    // Documents (president)
+    $('btnSendDoc')?.addEventListener('click',async ()=>{ const to = $('docTo').value; if(!to){alert('Escolha destinatário');return} if(currentUser && to===currentUser.usuario){alert('Você não pode enviar documento para si mesmo'); return} const toUser = load('d_users',[]).find(u=>u.usuario===to); const description = $('docCaption').value.trim(); const file = $('docFile').files[0]; if(!file){alert('Escolha um arquivo');return} const fileData = await toBase64(file); const arr = load('d_docs',[]); arr.push({id:Date.now()+'_'+Math.random(),from:currentUser.usuario,fromName:currentUser.nome,to:toUser.usuario,toName:toUser.nome,description,fileName:file.name,fileData,time:Date.now()}); save('d_docs',arr); addNotif({type:'doc',to:toUser.usuario,text:`Novo documento de ${currentUser.nome}`}); $('docCaption').value=''; $('docFile').value=''; renderDocs(); updateNotifCount(); });
+
+    // Faltas
+    $('btnSendFalta')?.addEventListener('click',async ()=>{ const to = $('faltaTo').value; if(!to){alert('Escolha destinatário');return} if(currentUser && to===currentUser.usuario){alert('Você não pode lançar falta para si mesmo'); return} const toUser = load('d_users',[]).find(u=>u.usuario===to); const desc = $('faltaDesc').value.trim(); const file = $('faltaFile').files[0]; let fileData=null; if(file) fileData = await toBase64(file); const arr = load('d_faltas',[]); arr.push({id:Date.now()+'_'+Math.random(),from:currentUser.usuario,fromName:currentUser.nome,to:toUser.usuario,toName:toUser.nome,desc,fileName:file?file.name:null,fileData,time:Date.now()}); save('d_faltas',arr); addNotif({type:'falta',to:toUser.usuario,text:`Recebeu falta de ${currentUser.nome}`}); $('faltaDesc').value=''; $('faltaFile').value=''; renderFaltas(); updateNotifCount(); });
+
+    // Recompensas
+    $('btnSendRec')?.addEventListener('click',async ()=>{ const to = $('recTo').value; if(!to){alert('Escolha destinatário');return} if(currentUser && to===currentUser.usuario){alert('Você não pode enviar recompensa para si mesmo'); return} const toUser = load('d_users',[]).find(u=>u.usuario===to); const desc = $('recDesc').value.trim(); const file = $('recFile').files[0]; let fileData=null; if(file) fileData = await toBase64(file); const arr = load('d_recs',[]); arr.push({id:Date.now()+'_'+Math.random(),from:currentUser.usuario,fromName:currentUser.nome,to:toUser.usuario,toName:toUser.nome,desc,fileName:file?file.name:null,fileData,time:Date.now()}); save('d_recs',arr); addNotif({type:'rec',to:toUser.usuario,text:`Recebeu recompensa de ${currentUser.nome}`}); $('recDesc').value=''; $('recFile').value=''; renderRecs(); updateNotifCount(); });
+
+    // Admin create account
+    $('btnCreateAccount')?.addEventListener('click',()=>{ const nome = $('adminNome').value.trim(); const usuario = $('adminUser').value.trim(); const senha = $('adminPass').value.trim(); const registro = $('adminRegistro').value.trim(); const cargo = $('adminCargo').value; const setor = $('adminSetor').value; if(!nome||!usuario||!senha||!registro){alert('Preencha todos os campos');return} const users = load('d_users',[]); if(users.find(u=>u.usuario===usuario)){alert('Usuário já existe');return} users.push({nome,usuario,senha,registro,cargo:setor?setor:'',setor:cargo?cargo:'',banned:false,bannedUntil:null}); users[users.length-1].cargo = $('adminCargo').value; users[users.length-1].setor = $('adminSetor').value; save('d_users',users); $('adminNome').value=''; $('adminUser').value=''; $('adminPass').value=''; $('adminRegistro').value=''; renderUserSelects(); renderManageList(); alert('Conta criada'); });
+
+    $('btnAddCargo')?.addEventListener('click',()=>{ const v = $('newCargo').value.trim(); if(!v) return; const arr = load('d_cargos',[]); if(!arr.includes(v)) arr.push(v); save('d_cargos',arr); $('newCargo').value=''; renderUserSelects(); alert('Cargo adicionado'); });
+    $('btnAddSetor')?.addEventListener('click',()=>{ const v = $('newSetor').value.trim(); if(!v) return; const arr = load('d_sectors',[]); if(!arr.includes(v)) arr.push(v); save('d_sectors',arr); $('newSetor').value=''; renderUserSelects(); alert('Setor adicionado'); });
+
+    // Manage users: ban/unban/delete (president cannot act on self)
+    $('btnBan')?.addEventListener('click',()=>{ const u = $('manageUser').value; if(!u){alert('Escolha usuário');return} if(currentUser && u===currentUser.usuario){alert('Você não pode banir o próprio presidente'); return} const days = parseFloat($('banDuration').value); const users = load('d_users',[]); const found = users.find(x=>x.usuario===u); if(!found) return; found.banned = true; found.bannedUntil = isNaN(days)?null:new Date(Date.now()+days*24*3600*1000).toISOString(); save('d_users',users); renderUserSelects(); renderManageList(); alert(found.bannedUntil?('Usuário banido até '+new Date(found.bannedUntil).toLocaleString()):'Usuário banido permanentemente'); });
+
+    $('btnUnban')?.addEventListener('click',()=>{ const u = $('manageUser').value; if(!u){alert('Escolha usuário');return} if(currentUser && u===currentUser.usuario){alert('Ação não permitida sobre o próprio presidente'); return} const users = load('d_users',[]); const found = users.find(x=>x.usuario===u); if(!found) return; found.banned = false; found.bannedUntil = null; save('d_users',users); renderUserSelects(); renderManageList(); alert('Usuário desbanido'); });
+
+    $('btnDelete')?.addEventListener('click',()=>{ const u = $('manageUser').value; if(!u) return; if(currentUser && u===currentUser.usuario){alert('Ação não permitida sobre o próprio presidente'); return} if(!confirm('Excluir conta permanentemente?')) return; let users = load('d_users',[]); users = users.filter(x=>x.usuario!==u); save('d_users',users); renderUserSelects(); renderManageList(); alert('Conta excluída'); });
+
+    // History loaders (with delete action per item)
+    $('btnLoadDocs')?.addEventListener('click',()=>{ const u = $('manageUser').value; if(!u){alert('Escolha usuário');return} const list = $('historyList'); list.innerHTML=''; load('d_docs',[]).filter(d=>d.to===u || d.from===u).forEach(d=>{ const div=document.createElement('div'); div.className='msg'; div.innerHTML=`<div><strong>${d.fromName}</strong> → <strong>${d.toName}</strong> <span class="small">${new Date(d.time).toLocaleString()}</span></div><div><em>${d.description||''}</em> <span class="file-preview">${d.fileName||''}</span></div>`; const btn=document.createElement('button'); btn.textContent='Apagar'; btn.onclick=()=>{ if(confirm('Apagar documento?')){ deleteDoc(d.id); div.remove(); } }; div.appendChild(btn); list.appendChild(div); }); });
+    $('btnLoadFaltas')?.addEventListener('click',()=>{ const u = $('manageUser').value; if(!u){alert('Escolha usuário');return} const list = $('historyList'); list.innerHTML=''; load('d_faltas',[]).filter(d=>d.to===u || d.from===u).forEach(d=>{ const div=document.createElement('div'); div.className='msg danger'; div.innerHTML=`<div><strong>${d.fromName}</strong> → <strong>${d.toName}</strong> <span class="small">${new Date(d.time).toLocaleString()}</span></div><div>${d.desc||''}</div>`; const btn=document.createElement('button'); btn.textContent='Apagar'; btn.onclick=()=>{ if(confirm('Apagar falta?')){ deleteFalta(d.id); div.remove(); } }; div.appendChild(btn); list.appendChild(div); }); });
+    $('btnLoadRecs')?.addEventListener('click',()=>{ const u = $('manageUser').value; if(!u){alert('Escolha usuário');return} const list = $('historyList'); list.innerHTML=''; load('d_recs',[]).filter(d=>d.to===u || d.from===u).forEach(d=>{ const div=document.createElement('div'); div.className='msg success'; div.innerHTML=`<div><strong>${d.fromName}</strong> → <strong>${d.toName}</strong> <span class="small">${new Date(d.time).toLocaleString()}</span></div><div>${d.desc||''}</div>`; const btn=document.createElement('button'); btn.textContent='Apagar'; btn.onclick=()=>{ if(confirm('Apagar recompensa?')){ deleteRec(d.id); div.remove(); } }; div.appendChild(btn); list.appendChild(div); }); });
+
+    // Notifications: add, render, delete per item
+    function addNotif(obj){ const arr = load('d_notifs',[]); arr.push({id:Date.now()+'_'+Math.random(),time:Date.now(),read:false,...obj}); save('d_notifs',arr); }
+    function updateNotifCount(){ if(!currentUser) return; const arr = load('d_notifs',[]); const n = arr.filter(n=>(!n.to || n.to===currentUser.usuario) && !n.read).length; const el = $('bellCount'); if(n>0){el.style.display='inline-block'; el.textContent=n;} else el.style.display='none'; }
+
+    // bell menu interactivity and delete
+    document.addEventListener('click', (e)=>{ const bellMenu = $('bellMenu'); if(!bellMenu) return; if(e.target.closest('.bell')) return; bellMenu.classList.add('hidden'); });
+    function renderNotificationsMenu(){ const m=$('bellMenu'); m.innerHTML=''; if(!currentUser) return; const arr = load('d_notifs',[]).filter(n=>!n.to || n.to===currentUser.usuario).slice().reverse(); if(arr.length===0){ m.innerHTML='<div style="padding:12px">Sem notificações</div>'; m.classList.remove('hidden'); return; } arr.forEach(n=>{ const d=document.createElement('div'); d.style.padding='8px'; d.style.borderBottom='1px solid #f2f6fb'; d.innerHTML = `<div class="small">${new Date(n.time).toLocaleString()}</div><div>${n.text}</div>`; const btnDel = document.createElement('button'); btnDel.textContent='Apagar'; btnDel.style.marginTop='6px'; btnDel.onclick=()=>{ const all = load('d_notifs',[]); const rest = all.filter(x=>x.id!==n.id); save('d_notifs',rest); renderNotificationsMenu(); updateNotifCount(); }; d.appendChild(btnDel); d.onclick=()=>{ const all = load('d_notifs',[]); const found = all.find(x=>x.id===n.id); if(found) found.read = true; save('d_notifs',all); updateNotifCount(); renderNotificationsMenu(); }; m.appendChild(d); }); const clear = document.createElement('div'); clear.style.padding='8px'; clear.style.textAlign='center'; const btn = document.createElement('button'); btn.textContent='Apagar todas'; btn.onclick=()=>{ let all=load('d_notifs',[]); all = all.filter(x=>x.to && x.to!==currentUser.usuario); save('d_notifs',all); renderNotificationsMenu(); updateNotifCount(); }; clear.appendChild(btn); m.appendChild(clear); m.classList.remove('hidden'); }
+    $('bellTop')?.addEventListener('click',(e)=>{ e.stopPropagation(); renderNotificationsMenu(); });
+
+    // Upload / remove logo (only president can)
+    $('btnUploadLogo')?.addEventListener('click',async ()=>{
+      if(!currentUser || !currentUser.cargo.toLowerCase().includes('presidente')){ alert('Apenas o presidente pode alterar o logo.'); return }
+      const f = $('siteLogoFile').files[0]; if(!f){ alert('Escolha uma imagem'); return }
+      const data = await toBase64(f); save('d_site_logo',data); renderLogo(); alert('Logo atualizado');
+    });
+    $('btnClearLogo')?.addEventListener('click',()=>{
+      if(!currentUser || !currentUser.cargo.toLowerCase().includes('presidente')){ alert('Apenas o presidente pode alterar o logo.'); return }
+      localStorage.removeItem('d_site_logo'); renderLogo(); alert('Logo removido');
+    });
+
+    // Change password
+    $('btnChangePass')?.addEventListener('click',()=>{ $('changePassBox').classList.remove('hidden'); });
+    $('btnCancelPass')?.addEventListener('click',()=>{ $('changePassBox').classList.add('hidden'); $('newPass').value=''; $('newPassConfirm').value=''; });
+    $('btnSavePass')?.addEventListener('click',()=>{ const p=$('newPass').value.trim(); const c=$('newPassConfirm').value.trim(); if(!p){alert('Senha não pode ser vazia');return} if(p!==c){alert('Confirmação diferente');return} const users=load('d_users',[]); const u = users.find(x=>x.usuario===currentUser.usuario); u.senha = p; save('d_users',users); currentUser.senha = p; $('changePassBox').classList.add('hidden'); $('newPass').value=''; $('newPassConfirm').value=''; alert('Senha alterada com sucesso'); });
+
+    function toBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(); r.readAsDataURL(file); }); }
+
+    // initial UI
+    renderLogo(); renderUserSelects(); renderBroadcasts(); renderManageList();
+    const users0 = load('d_users',[]); if(users0.length>0) $('welcomeText').textContent = 'Seja bem vindo(a) à DEDM';
+    ['loginUser','loginPass'].forEach(id=>$(id).addEventListener('keyup',e=>{ if(e.key==='Enter') $('btnLogin').click(); }));
+
+  </script>
+</body>
+</html>
+
+
